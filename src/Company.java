@@ -1,10 +1,30 @@
+import java.util.concurrent.Semaphore;
+
 public class Company {
     String name;
     float totalNumberOfShares;
     float availableNumberOfShares;
     float price;
+    public Semaphore semaphore = new Semaphore(1, true);
 
-    Company(){}
+    Company() {
+    }
+
+    public void acquire() throws InterruptedException {
+        semaphore.acquire();
+
+    }
+
+    public void release() {
+        semaphore.release();
+    }
+
+    Company(String name, float totalNumberOfShares, float availableNumberOfShares, float price) {
+        this.name = name;
+        this.totalNumberOfShares = totalNumberOfShares;
+        this.availableNumberOfShares = availableNumberOfShares;
+        this.price = price;
+    }
 
     public void setName(String name) {
         this.name = name;
@@ -26,6 +46,7 @@ public class Company {
         this.availableNumberOfShares = availableNumberOfShares;
     }
 
+
     public float getAvailableShares() {
         return availableNumberOfShares;
     }
@@ -37,4 +58,6 @@ public class Company {
     public float getPrice() {
         return price;
     }
+
+
 }
