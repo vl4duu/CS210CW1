@@ -11,7 +11,7 @@ public class StockExchange {
     StockExchange(HashMap<Company, Float> companies, ArrayList<Client> clients) {
         this.companies = companies;
         this.clients = clients;
-        for(Client cl : clients){
+        for (Client cl : clients) {
             cl.setStockExchange(this);
         }
     }
@@ -19,9 +19,22 @@ public class StockExchange {
     public boolean registerCompany(Company company, float numberOfShares) {
         return companies.putIfAbsent(company, numberOfShares) == null;
     }
+    public boolean deregisterCompany(Company company) throws InterruptedException {
+        if(companies.get(company) != null){
+            company.acquire();
+            for (Client c : clients) {
+                c.getStocks().remove(company);
+            }
+            companies.remove(company);
+            company.release();
+            return true;
+        }else {
+            for (Client c : clients) {
+                c.getStocks().remove(company);
+            }
+            return false;
+        }
 
-    public boolean deregisterCompany(Company company, float numberOfShares) {
-        return companies.remove(company, numberOfShares);
     }
 
     public boolean addClient(Client client) {
@@ -55,6 +68,7 @@ public class StockExchange {
         company.setPrice(company.getPrice() + amount);
         company.release();
     }
+
     /***
      * Ca sa vindem shareurile trebuie sa:
      *
@@ -84,6 +98,7 @@ public class StockExchange {
         company.release();
         return response;
     }
+
     /***
      * Ca sa vindem shareurile trebuie sa:
      *
