@@ -17,9 +17,9 @@ public class Application {
 
         /**Client Threads */
         ArrayList<Client> clients = new ArrayList<>();
-        Client client1 = new Client(new HashMap<>(), 100000, "Client1", tesla);
-        Client client2 = new Client(new HashMap<>(), 100000, "Client2", tesla);
-        Client client3 = new Client(new HashMap<>(), 100000, "Client3", tesla);
+        Client client1 = new Client();
+        Client client2 = new Client();
+        Client client3 = new Client();
 
 
 

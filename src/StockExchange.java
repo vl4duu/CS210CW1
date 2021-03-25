@@ -19,8 +19,9 @@ public class StockExchange {
     public boolean registerCompany(Company company, float numberOfShares) {
         return companies.putIfAbsent(company, numberOfShares) == null;
     }
+
     public boolean deregisterCompany(Company company) throws InterruptedException {
-        if(companies.get(company) != null){
+        if (companies.get(company) != null) {
             company.acquire();
             for (Client c : clients) {
                 c.getStocks().remove(company);
@@ -28,7 +29,7 @@ public class StockExchange {
             companies.remove(company);
             company.release();
             return true;
-        }else {
+        } else {
             for (Client c : clients) {
                 c.getStocks().remove(company);
             }
@@ -38,6 +39,7 @@ public class StockExchange {
     }
 
     public boolean addClient(Client client) {
+        client.setStockExchange(this);
         return clients.add(client);
     }
 
@@ -46,6 +48,7 @@ public class StockExchange {
     }
 
     public boolean removeClient(Client client) {
+        client.setStockExchange(null);
         return clients.remove(client);
     }
 
@@ -79,22 +82,7 @@ public class StockExchange {
     public boolean buy(Client client, Company company, float numberOfShares) throws InterruptedException {
         boolean response;
         company.acquire();
-        float transactionPrice = numberOfShares * company.getPrice();
-
-        if (company.getAvailableShares() >= numberOfShares && client.balance >= transactionPrice) {
-            client.modifyBalanceBy(-transactionPrice);
-            // first update the company object's internal number of shares
-            // then broadcast these changes to the stockexchange
-            company.setAvailableShares(company.getAvailableShares() - numberOfShares);
-            this.updateCompanyAvailableShares(company);
-            client.modifyCompanyStocksBy(company, numberOfShares);
-            response = true;
-        } else {
-            System.out.println("Requirements not met");
-            response = false;
-        }
-
-
+        response = buyTransaction(client,company,numberOfShares);
         company.release();
         return response;
     }
@@ -108,13 +96,64 @@ public class StockExchange {
      */
     public boolean sell(Client client, Company company, float numberOfShares) throws InterruptedException {
         company.acquire();
-
-        client.modifyBalanceBy(-numberOfShares);
-        client.modifyCompanyStocksBy(company, numberOfShares * company.getPrice());
-        company.setAvailableShares(company.getAvailableShares() + numberOfShares);
-        this.updateCompanyAvailableShares(company);
+        boolean response = sellTransaction(client, company, numberOfShares);
         company.release();
-        return true;
+        return response;
+    }
+
+    public boolean buyLow(Client client, Company company, float numberOfShares, float limit) throws InterruptedException {
+        boolean response;
+        company.acquire();
+        if (company.getPrice() >= limit) {
+            response = false;
+        } else {
+            response = buyTransaction(client, company, numberOfShares);
+        }
+        return response;
+    }
+
+    public boolean sellHigh(Client client, Company company, float numberOfShares, float limit) throws InterruptedException {
+        boolean response;
+        company.acquire();
+        if(company.getPrice() < limit){
+            response = false;
+        }else {
+            response = sellTransaction(client, company, numberOfShares);
+        }
+        company.release();
+        return response;
+    }
+
+    public boolean buyTransaction(Client client, Company company, float numberOfShares){
+        boolean response;
+        float transactionPrice = numberOfShares * company.getPrice();
+
+        if (company.getAvailableShares() >= numberOfShares && client.balance >= transactionPrice) {
+            client.modifyBalanceBy(-transactionPrice);
+            company.setAvailableShares(company.getAvailableShares() - numberOfShares);
+            this.updateCompanyAvailableShares(company);
+            client.modifyCompanyStocksBy(company, numberOfShares);
+            response = true;
+        } else {
+            System.out.println("Requirements not met");
+            response = false;
+        }
+        return response;
+    }
+
+    public boolean sellTransaction(Client client, Company company, float numberOfShares){
+        boolean response;
+        float transactionPrice = numberOfShares * company.price;
+        if(client.getStocks().get(company) >= numberOfShares){
+            client.modifyCompanyStocksBy(company, -numberOfShares);
+            client.modifyBalanceBy(+transactionPrice);
+            company.setAvailableShares(company.getAvailableShares() + numberOfShares);
+            this.updateCompanyAvailableShares(company);
+            response = true;
+        }else {
+            response = false;
+        }
+        return response;
     }
 
 }

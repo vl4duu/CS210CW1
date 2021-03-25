@@ -10,12 +10,12 @@ public class Client implements Runnable {
     Client() {
     }
 
-    Client(HashMap<Company, Float> shares, float balance, String name, Company target) {
-        this.shares = shares;
-        this.balance = balance;
-        this.name = name;
-        this.target = target;
-    }
+//    Client(HashMap<Company, Float> shares, float balance, String name, Company target) {
+//        this.shares = shares;
+//        this.balance = balance;
+//        this.name = name;
+//        this.target = target;
+//    }
 
     public HashMap<Company, Float> getStocks() {
         return shares;
@@ -34,15 +34,19 @@ public class Client implements Runnable {
     }
 
     public boolean buy(Company company, float numberOfShares) throws InterruptedException {
-        return stockExchange.buy(this, company, numberOfShares);
+
+        return numberOfShares > 0 && stockExchange.buy(this, company, numberOfShares);
     }
 
     public boolean sell(Company company, float numberOfShares) throws InterruptedException {
+        //input check
+        if (numberOfShares < 0) {
+            return false;
+        }
         // check if we have any shares for that company and also if we have enough of them
-        if (this.getStocks().get(company) != null && this.getStocks().get(company) >= numberOfShares)
+        if (this.getStocks().get(company) != null) {
             return stockExchange.sell(this, company, numberOfShares);
-        //TODO: race condition
-        else return false;
+        } else return false;
     }
 
     public boolean buyLow(Company company, float numberOfShares, float limit) throws InterruptedException {
@@ -51,10 +55,8 @@ public class Client implements Runnable {
         while (company.getPrice() > limit) {
             wait(1000);
         }
-        return buy(company, numberOfShares);
-        //TODO: race condition
+        return stockExchange.buyLow(this, company, numberOfShares, limit);
     }
-
 
     public boolean sellHigh(Company company, float numberOfShares, float limit) throws InterruptedException {
         if (this.getStocks().get(company) == null || this.getStocks().get(company) < numberOfShares) return false;
@@ -62,7 +64,7 @@ public class Client implements Runnable {
         while (company.getPrice() < limit) {
             wait(1000);
         }
-        return buy(company, numberOfShares);
+        return stockExchange.sellHigh(this, company, numberOfShares, limit);
     }
 
     public boolean deposit(float amount) {
@@ -77,7 +79,9 @@ public class Client implements Runnable {
         } else return false;
     }
 
-    // todo create getter for balance
+    public float getBalance() {
+        return balance;
+    }
 
     public void modifyBalanceBy(float transactionPrice) {
         this.balance -= transactionPrice;
