@@ -15,9 +15,10 @@ public class Client implements Runnable {
 
     /**
      * Constructor class used for testing purposes
-     * @param name String
+     *
+     * @param name   String
      * @param target Company
-     * @param type type of client
+     * @param type   type of client
      */
     Client(String name, Company target, int type) {
         this.name = name;
@@ -27,6 +28,7 @@ public class Client implements Runnable {
 
     /**
      * return stocks list
+     *
      * @return HashMap
      */
     public HashMap<Company, Float> getStocks() {
@@ -50,7 +52,7 @@ public class Client implements Runnable {
     /**
      * Modifies the givens company's value by the ammount given
      *
-     * @param company to be modiefied
+     * @param company        to be modiefied
      * @param numberOfShares to modify by
      */
     public void modifyCompanyStocksBy(Company company, float numberOfShares) {
@@ -99,8 +101,7 @@ public class Client implements Runnable {
      * @return true if transaction succeeded, false if it did not
      * @throws InterruptedException while acquiring
      */
-    public synchronized boolean buyLow(Company company, float numberOfShares, float limit)
-            throws InterruptedException {
+    public synchronized boolean buyLow(Company company, float numberOfShares, float limit) throws InterruptedException {
         System.out.println(this.name + " is trying to buy under " + limit);
         if (this.balance < numberOfShares * limit) {
             System.out.println(this.name + " does not have enough funds.");
@@ -109,8 +110,8 @@ public class Client implements Runnable {
 
         System.out.println(this.name + " is waiting for the price to drop under " + limit);
         while (company.getPrice() > limit) {
-            wait(20000);
-            if(company.getPrice() > limit){
+            wait(25000);
+            if (company.getPrice() > limit) {
                 System.out.println(this.name + " Gave up on waiting for the price to drop under " + limit);
                 return false;
             }
@@ -138,15 +139,13 @@ public class Client implements Runnable {
         } else {
             System.out.println(this.name + " is waiting for the price to rise over " + limit + ".");
             while (company.getPrice() < limit) {
-
-                wait(8000);
-                if (company.getPrice() < limit) {
-                    System.out.println(this.name + " has stopped waiting");
+                wait(7000);
+                if(company.getPrice() < limit){
+                    System.out.println("the price is too small for " + this.name + " to sell");
                     return false;
                 }
             }
-            return stockExchange.sellHigh(this, company, numberOfShares, limit);
-
+            return stockExchange.sellHigh(this, company,numberOfShares,limit);
 
         }
     }

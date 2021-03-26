@@ -2,14 +2,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Application {
-    public static void main(String[] args) throws InterruptedException {
-
-
-
+    public static void main(String[] args)  {
 
         //Companies
-
-
         Company tesla = new Company("Tesla", 100, 50, 100);
 
 //        Client Threads
@@ -47,12 +42,6 @@ public class Application {
         c3.start();
         c4.start();
         c5.start();
-
-        c1.join();
-        c2.join();
-        c3.join();
-        c4.join();
-        c5.join();
 
 
 
